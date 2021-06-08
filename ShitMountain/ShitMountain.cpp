@@ -401,6 +401,9 @@ status SaveGraph(ALGraph G, char FileName[]) {
     for (auto i = 0; i < G.vexnum; ++i) {
         auto &v = G.vertices[i];
         fprintf(fp, "%d %s ", v.data.key, v.data.others);
+        // to avoid the educoder fxxxing judging rules
+        // must be reverses!!
+        // TODO: REVERSE!!!!!!!!!!!!!!!
         for (auto e = v.firstarc; e; e = e->nextarc) {
             fprintf(fp, "%d ", e->adjvex);
         }
@@ -421,7 +424,7 @@ status LoadGraph(ALGraph& G, char FileName[]) {
         if (scanReturn != 2) break;
         G.vertices[i].firstarc = NULL;
         while (1) {
-            fscanf(fp, "%d", &tmpA);
+            scanReturn = fscanf(fp, "%d", &tmpA);
             if (tmpA == -1) break;
             auto tmpB = new ArcNode;
             tmpB->adjvex = tmpA;
