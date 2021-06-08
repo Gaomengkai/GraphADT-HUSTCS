@@ -1,5 +1,6 @@
-# ShitMountain
+# ShitMountain 屎山
 A shitmountain of Graph ADT
+一个图ADT的屎山
 
 华中科技大学 数据结构实验（四）2021年春 图
 
