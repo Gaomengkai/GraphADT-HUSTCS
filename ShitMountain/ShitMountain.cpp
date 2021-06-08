@@ -2,6 +2,8 @@
 //
 
 #include <string.h>
+#include <algorithm>
+#include <queue>
 #include "stdio.h"
 #include "stdlib.h"
 #define TRUE 1
@@ -365,89 +367,71 @@ status DFSTraverse(ALGraph& G, void (*visit)(VertexType))
 status BFSTraverse(ALGraph& G, void (*visit)(VertexType))
 //对图G进行广度优先搜索遍历，依次对图中的每一个顶点使用函数visit访问一次，且仅访问一次
 {
+    // depends on:
+    // #include <queue>
+    // #include <cstring>
+    // STL library is used
     if (!G.vexnum) return INFEASIBLE;
-    for (int k = 0; k < 20; k++)
-        visited1[k] = 0;       //将visited1元素初始化为0
-    QUEUE queue;
-    queue.elem = (int*)malloc(sizeof(int) * MAX_VERTEX_NUM);
-    queue.front = 0; queue.tail = 0; queue.length = 0;  //初始化队列
-    for (int i = 0; i < G.vexnum; i++)
-        if (!visited1[i])
+    std::deque<int> q;
+    bool vst[100];
+    memset(vst, 0, sizeof(vst));
+    // push into q
+    // if the graph has some non-connected subgraph, we must do it again
+    // and again.
+    for (auto i = 0; i < G.vexnum; ++i) {
+        if (vst[i]) continue;
+        q.push_back(i);
+        while (!q.empty())
         {
-            visit(G.vertices[i].data);
-            visited1[i] = 1;  //访问过后做标记
-            *(queue.elem + queue.tail) = i;
-            queue.length++;    //将顶点位序入队列
-            queue.tail = (queue.tail + MAX_VERTEX_NUM) % MAX_VERTEX_NUM;
-            if (queue.length != 0)
-            {
-                int a = *(queue.elem + queue.front);  //访问队列第一个元素
-                queue.front = (queue.front + MAX_VERTEX_NUM) % MAX_VERTEX_NUM;  //将第一个元素出队列
-                queue.length--;
-                for (ArcNode* p = G.vertices[a].firstarc; p; p = p->nextarc)  //每访问队列中的一个元素，将与其连接的顶点的位序入队列
-                {
-                    if (!visited1[p->adjvex])
-                    {
-                        visited1[p->adjvex] = 1;
-                        visit(G.vertices[p->adjvex].data);
-                        *(queue.elem + queue.tail) = p->adjvex;  //与其连接的顶点的位序入队列
-                        queue.length++;
-                        queue.tail = (queue.tail + MAX_VERTEX_NUM) % MAX_VERTEX_NUM;
-                    }
-                }
+            auto crt = q.front();
+            q.pop_front();
+            if (vst[crt]) continue;
+            vst[crt] = true;
+            visit(G.vertices[crt].data);
+            for (auto e = G.vertices[crt].firstarc; e; e = e->nextarc) {
+                if (!vst[e->adjvex]) q.push_back(e->adjvex);
             }
         }
+    }
     return OK;
 }
-
-status SaveGraph(ALGraph G, char FileName[])
-//将图的数据写入到文件FileName中
-{
-    int nums[20] = { 0 };
+status SaveGraph(ALGraph G, char FileName[]) {
     FILE* fp = fopen(FileName, "w");
-    if (!fp) return ERROR;;
-    for (int i = 0; i < G.vexnum; i++)  //将顶点的信息存入文件
-    {
-        fprintf(fp, "%d %s ", G.vertices[i].data.key, G.vertices[i].data.others);
-    }
-    fprintf(fp, "-1 nil ");  //打印结束标志
-    for (int j = 0; j < G.vexnum; j++)  //遍历每个顶点
-    {
-        ArcNode* p = G.vertices[j].firstarc;
-        while (p)  //将每个没保存的弧存入文件
-        {
-            if (!nums[G.vertices[p->adjvex].data.key])
-                fprintf(fp, "%d %d ", G.vertices[j].data.key, G.vertices[p->adjvex].data.key);
-            p = p->nextarc;
+    if (!fp) return ERROR;
+    for (auto i = 0; i < G.vexnum; ++i) {
+        auto &v = G.vertices[i];
+        fprintf(fp, "%d %s ", v.data.key, v.data.others);
+        for (auto e = v.firstarc; e; e = e->nextarc) {
+            fprintf(fp, "%d ", e->adjvex);
         }
-        if (!nums[G.vertices[j].data.key])
-            nums[G.vertices[j].data.key] = 1;
+        fprintf(fp, "-1\n");
     }
-    fprintf(fp, "-1 -1");
     fclose(fp);
     return OK;
 }
-status LoadGraph(ALGraph& G, char FileName[])
-//读入文件FileName的图数据，创建图的邻接表
-{
-    VertexType V[20];
-    int VR[20][2];
+status LoadGraph(ALGraph& G, char FileName[]) {
+    if (G.vexnum) return ERROR;
     FILE* fp = fopen(FileName, "r");
     if (!fp) return ERROR;
-    for (int i = 0;; i++)  //用V储存顶点数据
-    {
-        fscanf(fp, "%d%s", &V[i].key, V[i].others);
-        if (V[i].key == -1)
-            break;
+    int i = 0;
+    int tmpA = -1;
+    int scanReturn = 2;
+    while (!feof(fp)) {
+        scanReturn = fscanf(fp, "%d%s", &G.vertices[i].data.key, G.vertices[i].data.others);
+        if (scanReturn != 2) break;
+        G.vertices[i].firstarc = NULL;
+        while (1) {
+            fscanf(fp, "%d", &tmpA);
+            if (tmpA == -1) break;
+            auto tmpB = new ArcNode;
+            tmpB->adjvex = tmpA;
+            tmpB->nextarc = G.vertices[i].firstarc;
+            G.vertices[i].firstarc = tmpB;
+        }
+        ++i;
     }
-    for (int j = 0;; j++)  //用VR储存弧数据
-    {
-        fscanf(fp, "%d%d", &VR[j][0], &VR[j][1]);
-        if (VR[j][0] == -1)
-            break;
-    }
+    G.vexnum = i;
     fclose(fp);
-    CreateGraph(G, V, VR);  //使用既有函数构建图
     return OK;
 }
 
