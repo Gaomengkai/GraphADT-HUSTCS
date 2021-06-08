@@ -82,6 +82,7 @@ status CreateGraph(ALGraph& G, VertexType V[], KeyType VR[][2]) //创建无向�
     {
         ArcNode* r1 = (ArcNode*)malloc(sizeof(ArcNode));
         ArcNode* r2 = (ArcNode*)malloc(sizeof(ArcNode));
+        if (!(r1 && r2))return ERROR;
         r1->adjvex = tmpVtx[VR[l][0]]; r2->adjvex = tmpVtx[VR[l][1]];
         r1->nextarc = G.vertices[tmpVtx[VR[l][1]]].firstarc;
         G.vertices[tmpVtx[VR[l][1]]].firstarc = r1;
@@ -239,29 +240,31 @@ status DeleteVex(ALGraph& G, KeyType v) {//在图G中删除关键字v对应的�
     return OK;
 }
 
-status InsertArc(ALGraph& G, KeyType v, KeyType w)
-//在图G中增加弧<v,w>
-{
-    if (!G.vexnum) return INFEASIBLE;  //图不存在
-    int nums[30] = { 0 };   //用来标记已存在的顶点
-    for (int i = 0; i < G.vexnum; i++)
-    {
+status InsertArc(ALGraph& G, KeyType v, KeyType w) {
+#define CLEARMEM(x) memset((x),0,sizeof((x)));
+    if (!G.vexnum) return INFEASIBLE;// graph not exist
+    int nums[30];
+    CLEARMEM(nums);
+    // to judge whether the graph already has a edge
+    // and find whether the graph has key v and w
+    for (int i = 0; i < G.vexnum; i++) {
         if (nums[G.vertices[i].data.key] == 0)
             nums[G.vertices[i].data.key] = 1;
         else
             return ERROR;
     }
-    if (!nums[v] || !nums[w]) return ERROR; //不存在相应结点
-    int loc_v = LocateVex(G, v), loc_w = LocateVex(G, w);   //存在相应结点并求出结点的下标
+    if (!nums[v] || !nums[w]) return ERROR; // NO VERTEX AND FXXK OFF
+    int loc_v = LocateVex(G, v), loc_w = LocateVex(G, w);
+    // assert(v); assert(w);
     ArcNode* p = G.vertices[loc_v].firstarc;
-    while (p)
-    {
+    while (p) {
         if (p->adjvex == loc_w)
-            return ERROR;  //边已存在
+            return ERROR;
         p = p->nextarc;
     }
-    ArcNode* ptr2 = (ArcNode*)malloc(sizeof(ArcNode));   //添加两个表结点
-    ArcNode* ptr1 = (ArcNode*)malloc(sizeof(ArcNode));
+    ArcNode* ptr2 = (ArcNode*)calloc(1,sizeof(ArcNode));
+    ArcNode* ptr1 = (ArcNode*)calloc(1,sizeof(ArcNode));
+    if (ptr1 == NULL || ptr2 == NULL) return ERROR;
     ptr1->adjvex = loc_w;
     ptr1->nextarc = G.vertices[loc_v].firstarc;
     G.vertices[loc_v].firstarc = ptr1;
@@ -269,66 +272,69 @@ status InsertArc(ALGraph& G, KeyType v, KeyType w)
     ptr2->nextarc = G.vertices[loc_w].firstarc;
     G.vertices[loc_w].firstarc = ptr2;
     G.arcnum++;
+#undef CLEARMEM
     return OK;
 }
 
-status DeleteArc(ALGraph& G, KeyType v, KeyType w)
-//在图G中删除弧<v,w>
-{
+status DeleteArc(ALGraph& G, KeyType v, KeyType w){
     if (!G.vexnum) return INFEASIBLE;
-    int nums[30] = { 0 }, num = 0;
-    for (int i = 0; i < G.vexnum; i++)
-    {
+    int nums[30];
+    // for dbg
+    int nFree = 0;
+    memset(nums, 0, sizeof(nums));
+    for (int i = 0; i < G.vexnum; i++) {
         if (nums[G.vertices[i].data.key] == 0)
             nums[G.vertices[i].data.key] = 1;
         else
             return ERROR;
     }
-    if (!nums[v] || !nums[w]) return ERROR; //不存在相应结点
-    int loc_v = LocateVex(G, v), loc_w = LocateVex(G, w); //结点的下标
-    ArcNode* p = G.vertices[loc_v].firstarc;
-    if (!p) return ERROR; //关键字为v的结点不含有弧
-    ArcNode* q = p;
-    while (p) //删除（v,w）
-    {
-        if (p->adjvex == loc_w && !num)
-        {
-            G.vertices[loc_v].firstarc = p->nextarc;
-            free(p);
-            if (G.kind == DG) return OK;
+    if (!nums[v] || !nums[w]) return ERROR;
+    int iv = LocateVex(G, v), iw = LocateVex(G, w);
+    // assert(iv); assert(iw)
+
+    // Start delete v->w
+    auto e1 = G.vertices[iv].firstarc;
+    if (e1 == NULL) return ERROR;
+    auto e1tmp = e1;
+    while (e1) {
+        if (e1->adjvex == iw && e1==G.vertices[iv].firstarc) { // first loop
+            G.vertices[iv].firstarc = e1->nextarc;
+            free(e1);
+            nFree += 1;
+            break;
+        } else if (e1->adjvex == iw) { // other
+            e1tmp->nextarc = e1->nextarc;
+            free(e1);
+            nFree += 1;
             break;
         }
-        else if (p->adjvex == loc_w && num)
-        {
-            q->nextarc = p->nextarc;
-            free(p);
-            if (G.kind == DG) return OK;
+        e1tmp = e1;
+        e1 = e1tmp->nextarc;
+    }
+    if (!e1) return ERROR; // Arc not found
+    if (G.kind == DG) {
+        G.arcnum -= 1; return OK;
+    } // DG need not to delete other arc
+
+    // Start delete w->v
+    auto e2 = G.vertices[iw].firstarc;
+    auto e2tmp = e2;
+    while (e2)  {
+        if (e2->adjvex == iv && e2 == G.vertices[iw].firstarc) { // first loop
+            G.vertices[iw].firstarc = e2->nextarc;
+            free(e2);
+            nFree += 1;
+            break;
+        } else if (e2->adjvex == iv) { // other
+            e2tmp->nextarc = e2->nextarc;
+            free(e2);
+            nFree += 1;
             break;
         }
-        q = p;
-        num++;
-        p = q->nextarc;
+        e2tmp = e2;
+        e2 = e2tmp->nextarc;
     }
-    if (!p) return ERROR; //未找到对应弧
-    int num1 = 0;
-    ArcNode* p1 = G.vertices[loc_w].firstarc;
-    ArcNode* q1 = p1;
-    while (p1) //删除<w,v>
-    {
-        if (p1->adjvex == loc_v && !num1)
-        {
-            G.vertices[loc_w].firstarc = p1->nextarc;
-            free(p1);
-        }
-        else if (p1->adjvex == loc_v && num1)
-        {
-            q1->nextarc = p1->nextarc;
-            free(p1);
-        }
-        q1 = p1;
-        num1++;
-        p1 = q1->nextarc;
-    }
+    G.arcnum -= 1;
     return OK;
 }
 
@@ -336,24 +342,23 @@ void visit(VertexType v)
 {
     printf(" %d %s", v.key, v.others);
 }
-void DFS(ALGraph& G, int v, void (*visit)(VertexType))
-{
-    visited[v] = 1;
+void DFSDriver(ALGraph& G, int v, void (*visit)(VertexType), KeyType vst[]) {
+    vst[v] = 1;
     visit(G.vertices[v].data);
-    for (ArcNode* p = G.vertices[v].firstarc; p; p = p->nextarc)
-        if (!visited[p->adjvex])  //顶未访问
-            DFS(G, p->adjvex, visit);
+    for (auto p = G.vertices[v].firstarc; p; p = p->nextarc)
+        if (!vst[p->adjvex])  //顶未访问
+            DFSDriver(G, p->adjvex, visit, vst);
 }
+
 status DFSTraverse(ALGraph& G, void (*visit)(VertexType))
 //对图G进行深度优先搜索遍历，依次对图中的每一个顶点使用函数visit访问一次，且仅访问一次
 {
     if (!G.vexnum) return INFEASIBLE;
-    for (int k = 0; k < 20; k++)
-        visited[k] = 0;       //将visited元素初始化为0
-    if (!G.vexnum) return INFEASIBLE;
+    KeyType vst[100];
+    memset(vst, 0, sizeof(vst));
     for (int i = 0; i < G.vexnum; i++)
-        if (!visited[i])  //未访问过
-            DFS(G, i, visit);
+        if (!vst[i])
+            DFSDriver(G, i, visit, vst);
     return OK;
 }
 
