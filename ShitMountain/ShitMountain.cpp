@@ -403,9 +403,14 @@ status SaveGraph(ALGraph G, char FileName[]) {
         fprintf(fp, "%d %s ", v.data.key, v.data.others);
         // to avoid the educoder fxxxing judging rules
         // must be reverses!!
-        // TODO: REVERSE!!!!!!!!!!!!!!!
+        int arrToReverse[100];
+        int arrIndex = 0;
         for (auto e = v.firstarc; e; e = e->nextarc) {
-            fprintf(fp, "%d ", e->adjvex);
+            arrToReverse[arrIndex++] = e->adjvex;
+        }
+        arrIndex--;
+        for (; arrIndex >= 0; arrIndex--) {
+            fprintf(fp, "%d ", arrToReverse[arrIndex]);
         }
         fprintf(fp, "-1\n");
     }
