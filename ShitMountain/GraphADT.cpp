@@ -117,12 +117,11 @@ int NextAdjVex(ALGraph G, KeyType v, KeyType w)
 {
     if (!G.vexnum) return INFEASIBLE;
     int loc_v = LocateVex(G, v), loc_w = LocateVex(G, w);  //loc_v是v顶点的位序   loc_w是w顶点的位序
-    if (loc_v == -2 || loc_w == -2) return -2;   //v或w顶点不存在
+    if (loc_v == -2 || loc_w == -2) return stNoVertex;   //v或w顶点不存在
     ArcNode* p = G.vertices[loc_v].firstarc;
     if (!p) return -2;   //v顶点为独立顶点
     ArcNode* q = p->nextarc;
-    while (p && q)
-    {
+    while (p && q) {
         if (G.vertices[p->adjvex].data.key == w)
             return q->adjvex;  //返回下一邻接点的位序
         p = p->nextarc;
@@ -363,10 +362,15 @@ status SaveGraph(ALGraph G, char FileName[]) {
         for (auto e = v.firstarc; e; e = e->nextarc) {
             arrToReverse[arrIndex++] = e->adjvex;
         }
-        arrIndex--;
-        for (; arrIndex >= 0; arrIndex--) {
-            fprintf(fp, "%d ", arrToReverse[arrIndex]);
+        // direct order
+        for (auto i = 0; i < arrIndex; ++i) {
+            fprintf(fp, "%d ", arrToReverse[i]);
         }
+        // reversed order was W A S T E D !
+        //arrIndex--;
+        //for (; arrIndex >= 0; arrIndex--) {
+        //    fprintf(fp, "%d ", arrToReverse[arrIndex]);
+        //}
         fprintf(fp, "-1\n");
     }
     fclose(fp);
@@ -383,11 +387,16 @@ status LoadGraph(ALGraph& G, char FileName[]) {
         scanReturn = fscanf(fp, "%d%s", &G.vertices[i].data.key, G.vertices[i].data.others);
         if (scanReturn != 2) break;
         G.vertices[i].firstarc = NULL;
+        int arcsToReverse[100];
+        int arcN = 0;
         while (1) {
             scanReturn = fscanf(fp, "%d", &tmpA);
             if (tmpA == -1) break;
+            arcsToReverse[arcN++] = tmpA;
+        }
+        for (int j = arcN - 1; j >= 0; --j) {
             auto tmpB = new ArcNode;
-            tmpB->adjvex = tmpA;
+            tmpB->adjvex = arcsToReverse[j];
             tmpB->nextarc = G.vertices[i].firstarc;
             G.vertices[i].firstarc = tmpB;
         }
@@ -399,14 +408,14 @@ status LoadGraph(ALGraph& G, char FileName[]) {
 }
 
 status AddGraph(GRAPHS& graphs, char ListName[])
-// 在Lists中增加一个名称为ListName的空单链表。
 {
+    if (LocateGraph(graphs, ListName)) return ERROR;
     strcpy(graphs.elem[graphs.length].name, ListName);
+    memset(&graphs.elem[graphs.length].G, 0, sizeof(ALGraph));
     graphs.length++;
     return 0;
 }
 status RemoveGraph(GRAPHS& graphs, char ListName[])
-// Lists中删除一个名称为ListName的线性表
 {
     for (int i = 0; i < graphs.length; i++)
     {
