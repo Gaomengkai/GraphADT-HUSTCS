@@ -2,6 +2,10 @@
 //
 #include "GraphADT.h"
 
+bool isEmpty(ALGraph& G) {
+    return (G.vexnum == 0);
+}
+
 status CreateGraph(ALGraph& G, VertexType V[], KeyType VR[][2]) //创建无向图
 {
     if (G.vexnum != 0) return INFEASIBLE;
@@ -97,13 +101,13 @@ int FirstAdjVex(ALGraph G, KeyType u)   //根据u在图G中查找顶点，查找
 {
     if (!G.vexnum) return INFEASIBLE;
     int a = LocateVex(G, u);  //a为顶点的位序
-    if (a == -2) return -2;   //未找到顶点u
+    if (a == -2) return stNoVertex;   //未找到顶点u
     else
     {
         if (G.vertices[a].firstarc != NULL)
             return (G.vertices[a].firstarc)->adjvex;  //返回第一邻接点的位序
         else
-            return -3;
+            return stNoFirstAdj;
     }
 
 }
