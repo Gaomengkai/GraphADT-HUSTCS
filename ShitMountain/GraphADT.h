@@ -18,6 +18,10 @@
 #define INFEASIBLE -1
 //#define OVERFLOW -2
 #define MAX_VERTEX_NUM 20
+
+const int stNoVertex = -2;
+const int stNoFirstAdj = -3;
+
 typedef int status;
 typedef int KeyType;
 typedef enum { DG, DN, UDG, UDN } GraphKind;
@@ -73,3 +77,4 @@ status LoadGraph(ALGraph& G, char FileName[]);
 status AddGraph(GRAPHS& graphs, char ListName[]);
 status RemoveGraph(GRAPHS& graphs, char ListName[]);
 int LocateGraph(GRAPHS graphs, char ListName[]);
+bool isEmpty(ALGraph& G);

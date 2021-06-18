@@ -138,8 +138,8 @@ ALGraph Second_menu(ALGraph& G)
         printf("-----------------------------------------------------------------\n");
         printf("                     SubMenu \n");
         printf("-----------------------------------------------------------------\n");
-        printf(" 1. 创建图 Create Graph               2. 销毁图 Destroy\n");
-        printf(" 3. 查找顶点  Locate                  4. 顶点赋值 PutVex\n");
+        printf(" 1. 创建图 Create Graph                2. 销毁图 Destroy\n");
+        printf(" 3. 查找顶点  Locate                   4. 顶点赋值 PutVex\n");
         printf(" 5. 获得第一邻接点 FirstAdjVex         6. 获得下一邻接点NextAdjVex\n");
         printf(" 7. 插入顶点 InsertVex                8. 删除顶点DeleteVex\n");
         printf(" 9. 插入弧 InsertArc                  10. 删除弧DelArc\n");
@@ -151,6 +151,12 @@ ALGraph Second_menu(ALGraph& G)
         cin >> op;
         switch (op) {
         case 1:
+            if (!isEmpty(G)) {
+                printf("[-] Already has a Graph！\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
             printf("Vertex and Arc, ends at -1：\n");
             for (int i = 0;i<=MaxV; ++i)
             {
@@ -170,11 +176,11 @@ ALGraph Second_menu(ALGraph& G)
                 _SCREEN_GREEN;
             }
             else if (st == INFEASIBLE) {
-                printf("图已存在！\n");
+                printf("图已经存在\nAlready has a Graph！\n");
                 _SCREEN_RED;
             }
             else {
-                printf("创建失败！\n");
+                printf("[-] ERROR！\n");
                 _SCREEN_RED;
             }
             _PW;
@@ -192,7 +198,13 @@ ALGraph Second_menu(ALGraph& G)
             _PW;
             break;
         case 3:
-            printf("请输入你想查找的顶点的关键字：");
+            if (isEmpty(G)) {
+                printf("[-] No Such Graph！\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
+            printf("Key to Find:(key):\t");
             cin >> u;
             st = LocateVex(G, u);
             if (st == INFEASIBLE) {
@@ -200,109 +212,214 @@ ALGraph Second_menu(ALGraph& G)
                 _SCREEN_RED
             }
             else if (st == -2) {
-                printf("顶点不存在！\n");
+                printf("[-] No Such Vertex！\n");
                 _SCREEN_RED
             }
             else {
-                printf("顶点的序号为%d。", st);
+                printf("Vertex AT  [ %d ]。", st);
                 _SCREEN_GREEN
             }
             _PW;
             break;
         case 4:
-            printf("请输入你想修改的顶点的关键字：");
+            if (isEmpty(G)) {
+                printf("[-] No Such Graph！\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
+            printf("key to replace:(key): \t");
             cin >> u;
-            printf("请输入替换后的数据：");
+            printf("请输入替换后的数据(key, others)：");
             cin >> value.key >> value.others;
             st = PutVex(G, u, value);
-            if (st == INFEASIBLE) {
-                printf("图不存在。\n");
+            if (st == OK) {
+                printf("[+] Success！\n");
+                _SCREEN_GREEN;
+            }
+            else {
+                printf("[-] Fail！\n");
                 _SCREEN_RED;
             }
-            else if (st == OK) printf("[+] Success！\n");
-            else printf("赋值失败！\n");
             _PW;
             break;
         case 5:
-            printf("请输入顶点的关键字：");
+            if (isEmpty(G)) {
+                printf("[-] No Such Graph！\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
+            printf("FirstAdjVex: (key): \t");
             scanf("%d", &u);
             st = FirstAdjVex(G, u);
-            if (st == INFEASIBLE) printf("图不存在\n");
-            else if (st == -2) printf("不存在该顶点！\n");
-            else if (st == -3) printf("第一邻接点不存在！\n");
-            else printf("第一邻接点的位序为%d！\n", st);
+            if (st == stNoVertex) {
+                printf("[-] No Such Vertex！\n");
+                _SCREEN_RED;
+            }
+            else if (st == stNoFirstAdj) {
+                printf("[-] 1st Adj Not Found! \n");
+                _SCREEN_RED;
+            }
+            else {
+                printf("1st Adj is [%d] -> [ %d ]！\n", u, st);
+                _SCREEN_GREEN;
+            }
             _PW;
             break;
         case 6:
-            printf("请输入两个顶点的关键字：");
-            scanf("%d%d", &u, &v);
+            if (isEmpty(G)) {
+                printf("[-] No Such Graph！\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
+            printf(" NextAdjVex: (key => key)：\t");
+            cin >> u >> v;
             st = NextAdjVex(G, u, v);
-            if (st == INFEASIBLE) printf("图不存在\n");
-            else if (st == -2) printf("查找失败！\n");
-            else printf("下一邻接点的位序为%d！\n", st);
+            if (st == -2) {
+                printf("[-] Nothins Found！\n");
+                _SCREEN_RED;
+            }
+            else {
+                printf("NextAdj AT  [ %d ]\n", st);
+                _SCREEN_GREEN;
+            }
             _PW;
             break;
         case 7:
-            printf("请输入你想插入的顶点的数据：");
-            scanf("%d%s", &value.key, value.others);
+            if (isEmpty(G)) {
+                printf("[-] No Such Graph！\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
+            printf("Insert a Vertex: (key, others): \t");
+            cin >> value.key >> value.others;
             st = InsertVex(G, value);
-            if (st == INFEASIBLE) printf("图不存在！\n");
-            else if (st == ERROR) printf("插入失败！\n");
-            else printf("[+] Success！\n");
+            if (st == ERROR) {
+                printf("[-] ERROR on InsertVex()\n");
+                _SCREEN_RED;
+            }
+            else {
+                printf("[+] Success！\n");
+                _SCREEN_GREEN;
+            }
             _PW;
             break;
         case 8:
-            printf("请输入你想删除的顶点的关键字：");
-            scanf("%d", &u);
+            if (isEmpty(G)) {
+                printf("[-] No Such Graph！\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
+            printf("v.key to delete: (key)：");
+            cin >> u;
             st = DeleteVex(G, u);
-            if (st == INFEASIBLE) printf("图不存在\n");
-            else if (st == ERROR) printf("删除失败！\n");
-            else printf("[+] Success！\n");
+            if (st == ERROR) {
+                printf("[-] ERROR on DeleteVertex()！\n");
+                _SCREEN_RED;
+            }
+            else {
+                printf("[+] Success！\n");
+                _SCREEN_GREEN;
+            }
             _PW;
             break;
         case 9:
-            printf("请输入弧的两个顶点的关键字：");
-            scanf("%d%d", &u, &v);
+            if (isEmpty(G)) {
+                printf("[-] No Such Graph！\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
+            printf("AddArc: (u.key <-> v.key):\t");
+            cin >> u >> v;
             st = InsertArc(G, u, v);
-            if (st == INFEASIBLE) printf("图不存在\n");
-            else if (st == ERROR) printf("插入失败！\n");
-            else printf("[+] Success！\n");
+            if (st == ERROR) {
+                printf("[-] ERROR on InsertArc()！\n"); _SCREEN_RED;
+            }
+            else {
+                printf("[+] Success！\n"); _SCREEN_GREEN;
+            }
             _PW;
             break;
         case 10:
-            printf("请输入弧的两个顶点的关键字：");
-            scanf("%d%d", &u, &v);
+            if (isEmpty(G)) {
+                printf("[-] No Such Graph！\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
+            printf("Delete: (u.key <-> v.key):\t");
+            cin >> u >> v;
             st = DeleteArc(G, u, v);
-            if (st == INFEASIBLE) printf("图不存在\n");
-            else if (st == ERROR) printf("删除失败！\n");
-            else printf("[+] Success！\n");
+            if (st != OK) {
+                printf("[-] ERROR on DeleteArc()！\n"); _SCREEN_RED;
+            }
+            else {
+                printf("[+] Success！\n"); _SCREEN_GREEN;
+            }
             _PW;
             break;
         case 11:
+            if (isEmpty(G)) {
+                printf("[-] No Such Graph！\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
             st = DFSTraverse(G, visit);
-            if (st == INFEASIBLE) printf("图不存在！\n");
+            _SCREEN_GREEN;
             _PW;
             break;
         case 12:
+            if (isEmpty(G)) {
+                printf("[-] No Such Graph！\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
             st = BFSTraverse(G, visit);
-            if (st == INFEASIBLE) printf("图不存在！\n");
+            _SCREEN_GREEN;
             _PW;
             break;
         case 13:
+            if (isEmpty(G)) {
+                printf("[-] No Such Graph！\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
             char FileName[20];
-            printf("请输入文件名称：");
-            scanf("%s", FileName);
+            printf("请输入文件名称/ FILENAME：");
+            cin >> FileName;
             st = SaveGraph(G, FileName);
-            if (st == ERROR) printf("打开文件失败！\n");
-            else printf("[+] Success！\n");
+            if (st == ERROR) {
+                printf("FILE_ERROR！\n"); _SCREEN_RED;
+            }
+            else {
+                printf("[+] Success！\n"); _SCREEN_GREEN;
+            }
             _PW;
             break;
         case 14:
-            printf("请输入文件名称：");
+            if (!isEmpty(G)) {
+                printf("[-] Already Exist Such Graph！\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
+            printf("请输入文件名称 / FILENAME：");
             scanf("%s", FileName);
             st = LoadGraph(G, FileName);
-            if (st == ERROR) printf("打开文件失败！\n");
-            else printf("[+] Success！\n");
+            if (st == ERROR) {
+                printf("FILE_ERROR！\n"); _SCREEN_RED;
+            }
+            else {
+                printf("[+] Success！\n"); _SCREEN_GREEN;
+            }
             _PW;
             break;
         case 0:
