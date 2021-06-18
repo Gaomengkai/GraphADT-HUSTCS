@@ -1,4 +1,4 @@
-# ShitMountain 屎山
+# ShitMountain 图
 A shitmountain of Graph ADT
 一个图ADT的屎山
 
