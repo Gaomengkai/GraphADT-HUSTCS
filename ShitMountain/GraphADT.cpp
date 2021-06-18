@@ -377,7 +377,7 @@ status LoadGraph(ALGraph& G, char FileName[]) {
     if (!fp) return ERROR;
     int i = 0;
     int tmpA = -1;
-    int scanReturn = 2;
+    int scanReturn = 0;
     while (!feof(fp)) {
         scanReturn = fscanf(fp, "%d%s", &G.vertices[i].data.key, G.vertices[i].data.others);
         if (scanReturn != 2) break;

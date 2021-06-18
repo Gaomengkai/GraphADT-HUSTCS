@@ -26,7 +26,7 @@ int main()
         printf("\n5. 读文件\n");
         printf("0. 输入0可退出系统\n");
         printf("-----------------------------------------------------------------\n");
-        printf("请选择你的操作[0~4]:");
+        printf("Your choice [0~5]: ");
         cin >> op;
         switch (op) {
         case 1:
@@ -95,6 +95,12 @@ int main()
                 _PW;
                 break;
             }
+            else if (!isEmpty(graphs.elem[result - 1].G)) {
+                printf("[-] Graph is not empty！\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
             cout << "Name of File:(string)";
             cin >> fileName;
             res2 = LoadGraph(graphs.elem[result - 1].G, fileName);
@@ -143,7 +149,7 @@ ALGraph Second_menu(ALGraph& G)
         printf(" 5. 获得第一邻接点 FirstAdjVex         6. 获得下一邻接点NextAdjVex\n");
         printf(" 7. 插入顶点 InsertVex                8. 删除顶点DeleteVex\n");
         printf(" 9. 插入弧 InsertArc                  10. 删除弧DelArc\n");
-        printf("11. 深度优先搜索遍历 DFS                12. 广度优先搜索遍历 BFS\n\n文件操作\n");
+        printf("11. 深度优先搜索遍历 DFS                12. 广度优先搜索遍历 BFS\n\n--[文件操作]\n");
         printf("13. 将图中的数据读入文件  SaveToFile     14. 将文件数据传入图LoadFromFile\n");
         printf(" 0. 输入0可返回上一级菜单 Back\n");
         printf("-----------------------------------------------------------------\n");
@@ -423,6 +429,7 @@ ALGraph Second_menu(ALGraph& G)
             _PW;
             break;
         case 0:
+            puts(errMsg);
             break;
         default:
             puts(errMsg);
