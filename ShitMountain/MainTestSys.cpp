@@ -9,7 +9,12 @@ int main()
         0x32,0x30,0x32,0x30,0x31,0x35,0x34,0x39,0x30,0x00 };
     ALGraph G;
     char graphname[20];
-    int result;
+    char fileName[20];
+    memset(graphname, 0, sizeof(graphname));
+    memset(fileName, 0, sizeof(fileName));
+
+    int result = -1;
+    int res2 = -1;
     int op = 1;
     while (op) {
         _CLEAR;
@@ -18,6 +23,7 @@ int main()
         printf("-----------------------------------------------------------------\n");
         printf("1. + 增加图                                     2. X 删除图\n");
         printf("3. ~ 查找图                                     4. ` 选中图\n");
+        printf("\n5. 读文件\n");
         printf("0. 输入0可退出系统\n");
         printf("-----------------------------------------------------------------\n");
         printf("请选择你的操作[0~4]:");
@@ -27,13 +33,13 @@ int main()
             printf("Name of New Graph：");
             cin >> graphname;
             if (LocateGraph(graphs, graphname) != 0){
-                printf("已存在!\n");
+                printf("[-] Graph %s Exists!\n",graphname);
                 _SCREEN_RED;
             }
             else
             {
                 AddGraph(graphs, graphname);
-                printf("[+] Success！\n");
+                printf("[+] Succeeded to create %s！\n",graphname);
                 _SCREEN_GREEN;
             }
             _PW;
@@ -43,11 +49,11 @@ int main()
             cin >> graphname;
             result = RemoveGraph(graphs, graphname);
             if (result == ERROR) {
-                printf("[-] No Such Graph！");
+                printf("[-] No Such Graph named %s！",graphname);
                 _SCREEN_RED;
             }
             else {
-                printf("[+] Success！\n");
+                printf("[+] Succeeded to remove %s！\n",graphname);
                 _SCREEN_GREEN;
             }
             _PW;
@@ -74,6 +80,30 @@ int main()
             }
             else {
                 printf("[-] No Such Graph！");
+                _SCREEN_RED;
+            }
+            _PW;
+            break;
+        case 5:
+            cout << "Name of Graph:(string)";
+            cin >> graphname;
+            result = LocateGraph(graphs, graphname);
+            if (result == 0) {
+                printf("[-] No Such Graph！\n");
+                printf("    You must create a new graph before.\n");
+                _SCREEN_RED;
+                _PW;
+                break;
+            }
+            cout << "Name of File:(string)";
+            cin >> fileName;
+            res2 = LoadGraph(graphs.elem[result - 1].G, fileName);
+            if (OK == res2) {
+                cout << "[+] Successs!\n";
+                _SCREEN_GREEN;
+            }
+            else {
+                cout << "[-] Load Error!\n";
                 _SCREEN_RED;
             }
             _PW;
@@ -113,7 +143,7 @@ ALGraph Second_menu(ALGraph& G)
         printf(" 5. 获得第一邻接点 FirstAdjVex         6. 获得下一邻接点NextAdjVex\n");
         printf(" 7. 插入顶点 InsertVex                8. 删除顶点DeleteVex\n");
         printf(" 9. 插入弧 InsertArc                  10. 删除弧DelArc\n");
-        printf("11. 深度优先搜索遍历 DFS                12. 广度优先搜索遍历 BFS\n");
+        printf("11. 深度优先搜索遍历 DFS                12. 广度优先搜索遍历 BFS\n\n文件操作\n");
         printf("13. 将图中的数据读入文件  SaveToFile     14. 将文件数据传入图LoadFromFile\n");
         printf(" 0. 输入0可返回上一级菜单 Back\n");
         printf("-----------------------------------------------------------------\n");

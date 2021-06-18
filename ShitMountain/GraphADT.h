@@ -16,7 +16,7 @@
 #define OK 1
 #define ERROR 0
 #define INFEASIBLE -1
-#define OVERFLOW -2
+//#define OVERFLOW -2
 #define MAX_VERTEX_NUM 20
 typedef int status;
 typedef int KeyType;

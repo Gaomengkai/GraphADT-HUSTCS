@@ -9,6 +9,7 @@ status CreateGraph(ALGraph& G, VertexType V[], KeyType VR[][2]) //创建无向�
     KeyType hasNode[30];  //用来判断V VR是否正确
     memset(tmpVtx, 0, sizeof(tmpVtx));
     memset(hasNode, 0, sizeof(hasNode));
+    memset(G.vertices, 0, sizeof(G.vertices));
     for (int i = 0; V[i].key != -1; i++) //判断V是否正确
     {
         if (hasNode[V[i].key] == 0)
@@ -16,31 +17,31 @@ status CreateGraph(ALGraph& G, VertexType V[], KeyType VR[][2]) //创建无向�
         else
             return ERROR;
     }
-    for (int j = 0; VR[j][0] != -1; j++)                   //判断VR是否正确
-        if (hasNode[VR[j][0]] == 0 || hasNode[VR[j][1]] == 0)
+    for (int i = 0; VR[i][0] != -1; i++)                   //判断VR是否正确
+        if (hasNode[VR[i][0]] == 0 || hasNode[VR[i][1]] == 0)
             return ERROR;
 
     for (Vnumber = 0; V[Vnumber].key != -1; Vnumber++);    //求顶点个数
     if (Vnumber > 20) return ERROR;                        //超过最大值
     for (VRnumber = 0; VR[VRnumber][0] != -1; VRnumber++); //求边个数
     G.vexnum = Vnumber; G.arcnum = VRnumber; G.kind = DG;
-    for (int k = 0; k < Vnumber; k++)                      //构建头结点数组
+    for (int i = 0; i < Vnumber; i++)                      //构建头结点数组
     {
-        G.vertices[k].data.key = V[k].key;
-        strcpy(G.vertices[k].data.others, V[k].others);
-        tmpVtx[V[k].key] = k;
-        G.vertices[k].firstarc = NULL;
+        G.vertices[i].data.key = V[i].key;
+        strcpy(G.vertices[i].data.others, V[i].others);
+        tmpVtx[V[i].key] = i;
+        G.vertices[i].firstarc = NULL;
     }
-    for (int l = 0; l < VRnumber; l++)                 //插入表结点
+    for (int i = 0; i < VRnumber; i++)                 //插入表结点
     {
-        ArcNode* r1 = (ArcNode*)malloc(sizeof(ArcNode));
-        ArcNode* r2 = (ArcNode*)malloc(sizeof(ArcNode));
+        ArcNode* r1 = (ArcNode*)calloc(1,sizeof(ArcNode));
+        ArcNode* r2 = (ArcNode*)calloc(1,sizeof(ArcNode));
         if (!(r1 && r2))return ERROR;
-        r1->adjvex = tmpVtx[VR[l][0]]; r2->adjvex = tmpVtx[VR[l][1]];
-        r1->nextarc = G.vertices[tmpVtx[VR[l][1]]].firstarc;
-        G.vertices[tmpVtx[VR[l][1]]].firstarc = r1;
-        r2->nextarc = G.vertices[tmpVtx[VR[l][0]]].firstarc;
-        G.vertices[tmpVtx[VR[l][0]]].firstarc = r2;
+        r1->adjvex = tmpVtx[VR[i][0]]; r2->adjvex = tmpVtx[VR[i][1]];
+        r1->nextarc = G.vertices[tmpVtx[VR[i][1]]].firstarc;
+        G.vertices[tmpVtx[VR[i][1]]].firstarc = r1;
+        r2->nextarc = G.vertices[tmpVtx[VR[i][0]]].firstarc;
+        G.vertices[tmpVtx[VR[i][0]]].firstarc = r2;
     }
     return OK;
 }
@@ -50,7 +51,8 @@ status DestroyGraph(ALGraph& G)       //销毁无向图G
     if (!G.vexnum) return INFEASIBLE; //图G不存在
     for (int i = 0; i < G.vexnum; i++)
     {
-        ArcNode* p = G.vertices[i].firstarc;
+        ArcNode* p = NULL;
+        p = G.vertices[i].firstarc;
         while (p)  //销毁表结点
         {
             ArcNode* q = p;
@@ -71,13 +73,6 @@ int LocateVex(ALGraph G, KeyType u)  //查找顶点
     return -2;
 }
 
-//status FindRepetition(ALGraph& G, KeyType u)  //查找是否有重复
-//{
-//    for (int i = 0; i < G.vexnum; i++)
-//        if (G.vertices[i].data.key == u)   //关键字重复
-//            return 1;
-//    return 0;
-//}
 
 status PutVex(ALGraph& G, KeyType u, VertexType v_a_l_v_e)   //根据u在图G中查找顶点，查找成功将该顶点值修改成value
 {
@@ -402,7 +397,7 @@ status AddGraph(GRAPHS& graphs, char ListName[])
     return 0;
 }
 status RemoveGraph(GRAPHS& graphs, char ListName[])
-// Lists中删除一个名称为ListName的线性表
+
 {
     for (int i = 0; i < graphs.length; i++)
     {
@@ -421,7 +416,6 @@ status RemoveGraph(GRAPHS& graphs, char ListName[])
     return ERROR;
 }
 int LocateGraph(GRAPHS graphs, char ListName[])
-// 在Lists中查找一个名称为ListName的线性表
 {
     for (int i = 0; i < graphs.length; i++)
     {
@@ -431,5 +425,3 @@ int LocateGraph(GRAPHS graphs, char ListName[])
     }
     return 0;
 }
-
-
