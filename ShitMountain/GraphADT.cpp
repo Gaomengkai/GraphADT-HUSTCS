@@ -128,8 +128,8 @@ int NextAdjVex(ALGraph G, KeyType v, KeyType w)
 status InsertVex(ALGraph& G, VertexType v)
 //在图G中插入顶点v
 {
-    if (G.vexnum == MAX_VERTEX_NUM) return ERROR;  //图的顶点个数达到最大
-    if (LocateVex(G, v.key)!=-1) return ERROR;   //图中已有关键字为v的顶点
+    // if (G.vexnum == MAX_VERTEX_NUM) return ERROR;  //图的顶点个数达到最大
+    if (LocateVex(G, v.key)!=-2) return ERROR;   //图中已有关键字为v的顶点
     G.vertices[G.vexnum].data.key = v.key;
     strcpy(G.vertices[G.vexnum].data.others, v.others);
     G.vertices[G.vexnum].firstarc = NULL;
@@ -144,7 +144,7 @@ status DeleteVex(ALGraph& G, KeyType v) {//在图G中删除关键字v对应的�
     int nFree = 0;
     // Cannot del the graph with only one vertex...
     int viSelVertex = LocateVex(G, v);
-    if (viSelVertex == -1)return ERROR;
+    if (viSelVertex == -2)return ERROR;
     ArcNode* eEdgeRelatedToSelectedVertex = G.vertices[viSelVertex].firstarc;
 
     while (eEdgeRelatedToSelectedVertex) {//找出与将要删除结点相关联的结点 
@@ -194,6 +194,8 @@ status DeleteVex(ALGraph& G, KeyType v) {//在图G中删除关键字v对应的�
 status InsertArc(ALGraph& G, KeyType v, KeyType w) {
 #define CLEARMEM(x) memset((x),0,sizeof((x)));
     if (!G.vexnum) return INFEASIBLE;// graph not exist
+    // following is cannot find the correct vertex.
+    if (stNoVertex == LocateVex(v) || stNoVertex == LocateGraph(w)) return ERROR;
     int nums[30];
     CLEARMEM(nums);
     // to judge whether the graph already has a edge
