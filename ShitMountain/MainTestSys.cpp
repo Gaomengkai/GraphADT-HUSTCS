@@ -284,7 +284,7 @@ ALGraph Second_menu(ALGraph& G)
             cin >> u >> v;
             st = NextAdjVex(G, u, v);
             if (st == -2) {
-                printf("[-] Nothins Found£¡\n");
+                printf("[-] Nothing Found£¡\n");
                 _SCREEN_RED;
             }
             else {
