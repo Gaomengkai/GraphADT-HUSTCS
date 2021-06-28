@@ -195,7 +195,7 @@ status InsertArc(ALGraph& G, KeyType v, KeyType w) {
 #define CLEARMEM(x) memset((x),0,sizeof((x)));
     if (!G.vexnum) return INFEASIBLE;// graph not exist
     // following is cannot find the correct vertex.
-    if (stNoVertex == LocateVex(v) || stNoVertex == LocateGraph(w)) return ERROR;
+    if (stNoVertex == LocateVex(G,v) || stNoVertex == LocateVex(G,w)) return ERROR;
     int nums[30];
     CLEARMEM(nums);
     // to judge whether the graph already has a edge
